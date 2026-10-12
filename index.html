@@ -57,12 +57,6 @@
       "time":  { "en": "11:45 AM – 4:00 PM", "si": "පෙ.ව. 11:45 – ප.ව. 4:00" },
       "venue": { "en": "The Tamarind Banquet", "si": "ද ටැමරින්ඩ් බැංකට්" },
       "area":  { "en": "Delgoda", "si": "දෙල්ගොඩ" },
-      "items": [
-        { "en": "Wedding photography", "si": "විවාහ ඡායාරූප ගත කිරීම" },
-        { "en": "Buffet lunch", "si": "බුෆේ දිවා ආහාරය" },
-        { "en": "Drinks", "si": "පානීය" },
-        { "en": "And more joyful moments", "si": "තවත් සතුටුදායක අවස්ථා රැසක්" }
-      ],
       "start": "2026-12-10T11:45:00+05:30",
       "end":   "2026-12-10T16:00:00+05:30",
       "mapQuery": "The Tamarind Banquet, Delgoda, Sri Lanka"
@@ -102,7 +96,7 @@
     "calHint":    { "en": "Tap the marked date to add it to your calendar", "si": "දින දර්ශනයට එක් කිරීමට සලකුණු කළ දිනය ස්පර්ශ කරන්න" },
     "addGoogle":  { "en": "Google Calendar", "si": "Google Calendar" },
     "addOutlook": { "en": "Outlook", "si": "Outlook" },
-    "addIcs":     { "en": "Download .ics", "si": ".ics බාගන්න" },
+    "addIcs":     { "en": "Save the date", "si": "දිනය සුරකින්න" },
     "calTitle":   { "en": "Wedding of {bride} & {groom}", "si": "{bride} සහ {groom} ගේ විවාහ මංගල්‍යය" },
     "locationsTitle": { "en": "Locations", "si": "ස්ථාන" },
     "tap":        { "en": "Tap to open", "si": "විවෘත කිරීමට ස්පර්ශ කරන්න" },
@@ -315,7 +309,6 @@ html[lang="si"] .l-small{font-size:3.9cqw;line-height:1.5;font-style:normal}
 .btn.primary{background:var(--btn-bg);color:var(--btn-fg)}
 .btn.primary:hover{filter:brightness(1.1);background:var(--btn-bg);color:var(--btn-fg)}
 .btn svg{width:17px;height:17px}
-.btn.sm{padding:.42em .95em;font-size:.9rem}
 
 /* ---------- rsvp ---------- */
 .rsvp{background:var(--paper2)}
@@ -734,9 +727,7 @@ D.events.forEach(function(e,i){
    +'<p class="ev-time" data-k="events.'+i+'.time"></p>'
    +'<h3 class="ev-title" data-k="events.'+i+'.title"></h3><div class="ev-rule"></div>'
    +'<p class="ev-venue" data-k="events.'+i+'.venue"></p><p class="ev-area" data-k="events.'+i+'.area"></p>'
-   +list
-   +'<div class="actions"><button type="button" class="btn sm" data-ics="'+i+'"><span data-k="ui.calendar"></span></button></div>'
-   +'</article></div>';
+   +list+'</article></div>';
 });
 $('#agendaBox').innerHTML=agHtml;
 
@@ -751,8 +742,7 @@ $('#locBox').innerHTML=D.venues.map(function(v,i){
    +'<h3 class="ev-title" data-k="venues.'+i+'.for"></h3><div class="ev-rule"></div>'
    +'<p class="ev-venue" data-k="venues.'+i+'.venue"></p><p class="ev-area" data-k="venues.'+i+'.area"></p>'
    +map
-   +'<div class="actions"><a class="btn primary" target="_blank" rel="noopener" href="'+MAPS+'destination='+q+'">'+PIN+'<span data-k="ui.directions"></span></a>'
-   +'<a class="btn" target="_blank" rel="noopener" href="https://waze.com/ul?q='+q+'&navigate=yes"><span>Waze</span></a></div></article>';
+   +'<div class="actions"><a class="btn primary" target="_blank" rel="noopener" href="'+MAPS+'destination='+q+'">'+PIN+'<span data-k="ui.directions"></span></a></div></article>';
 }).join('');
 
 /* ---------- calendar (Dec 2026 with the wedding day marked) ---------- */
@@ -803,9 +793,6 @@ function downloadIcs(filename, content){
 }
 var icsName = 'Wedding - '+L(D.couple.bride)+' & '+L(D.couple.groom)+'.ics';
 $('#icsBtn').addEventListener('click',function(){ downloadIcs(icsName, icsDoc(D.events)); });
-$$('#agendaBox [data-ics]').forEach(function(b){
-  b.addEventListener('click',function(){ downloadIcs(icsName, icsDoc([D.events[+b.getAttribute('data-ics')]])); });
-});
 $('#calGrid').addEventListener('click',function(ev){
   var b=ev.target.closest&&ev.target.closest('#markDay'); if(!b) return;
   calOpen=!calOpen; b.setAttribute('aria-expanded',String(calOpen)); $('#calPanel').hidden=!calOpen;

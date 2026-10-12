@@ -95,7 +95,7 @@
       { "name": { "en": "Nirosha",  "si": "නිරෝෂා" }, "whatsapp": "94765373260", "phone": "+94765373260" },
       { "name": { "en": "Tharusha", "si": "තරුෂ" },   "whatsapp": "94775393026", "phone": "+94775393026" }
     ],
-    "endpoint": ""
+    "endpoint": "https://script.google.com/macros/s/AKfycbwD7PCmWjCBCn4DLgoK4cQveBa9aP3HS4_Io3xEGSYHNWEuTVz5V_fSMoiutycwDnjpqg/exec"
   },
   "ui": {
     "saveTitle":  { "en": "Save the date", "si": "දිනය සටහන් කරගන්න" },
@@ -902,10 +902,30 @@ $('#smsBtn').addEventListener('click',function(){
 
 /* ---------- reveal + scroll-linked ring spin ---------- */
 var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-var io = new IntersectionObserver(function(es){
-  es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
-},{threshold:.15,rootMargin:'0px 0px -6% 0px'});
-$$('.reveal').forEach(function(el){ io.observe(el); });
+var revealEls = $$('.reveal');
+function reveal(el){ if(el && !el.classList.contains('in')) el.classList.add('in'); }
+var io=null;
+if('IntersectionObserver' in window){
+  try{
+    io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ reveal(e.target); io.unobserve(e.target); } });
+    },{threshold:.12,rootMargin:'0px 0px -5% 0px'});
+  }catch(e){ io=null; }
+}
+if(io){ revealEls.forEach(function(el){ io.observe(el); }); }
+/* Fallbacks so the cards can never stay hidden: reveal what is in view on load/scroll/resize, then a final safety sweep. */
+function revealInView(){
+  var vh = window.innerHeight || document.documentElement.clientHeight || 800;
+  revealEls.forEach(function(el){
+    if(el.classList.contains('in')) return;
+    var r = el.getBoundingClientRect();
+    if(r.top < vh - 24 && r.bottom > 0) reveal(el);
+  });
+}
+revealInView();
+window.addEventListener('scroll', revealInView, {passive:true});
+window.addEventListener('resize', revealInView, {passive:true});
+setTimeout(function(){ revealEls.forEach(reveal); }, 2000);
 
 var spins=$$('[data-spin]'), tk=false;
 function onScroll(){

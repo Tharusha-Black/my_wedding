@@ -114,6 +114,10 @@
     "message":    { "en": "Message (optional)", "si": "පණිවිඩය (අවශ්‍ය නොවේ)" },
     "accept":     { "en": "Happily Accepts", "si": "සතුටින් පැමිණෙමි" },
     "decline":    { "en": "Regretfully Declines", "si": "කණගාටුවෙන් පැමිණීමට නොහැක" },
+    "attendTitle":  { "en": "Which events will you attend?", "si": "ඔබ සහභාගී වන අවස්ථා මොනවාද?" },
+    "attendChurch": { "en": "Church ceremony", "si": "දේවස්ථාන පූජාව" },
+    "attendHotel":  { "en": "Hotel & wedding celebration", "si": "හෝටලය සහ මංගල සාදය" },
+    "attendNo":     { "en": "Regretfully, I cannot attend", "si": "කණගාටුවෙන්, මට පැමිණීමට නොහැක" },
     "send":       { "en": "Send RSVP", "si": "පිළිතුර යවන්න" },
     "sending":    { "en": "Sending…", "si": "යවමින්…" },
     "sent":       { "en": "Thank you! Your reply has been received.", "si": "ස්තූතියි! ඔබේ පිළිතුර ලැබුණි." },
@@ -122,7 +126,7 @@
     "whatsapp":   { "en": "WhatsApp", "si": "WhatsApp" },
     "sms":        { "en": "Send by SMS", "si": "SMS හරහා යවන්න" },
     "nameNeeded": { "en": "Please enter your full name.", "si": "කරුණාකර ඔබේ සම්පූර්ණ නම ඇතුළත් කරන්න." },
-    "choiceNeeded":{ "en": "Please choose one of the two options.", "si": "කරුණාකර විකල්ප දෙකෙන් එකක් තෝරන්න." },
+    "choiceNeeded":{ "en": "Please tick at least one option.", "si": "කරුණාකර අවම වශයෙන් එක් විකල්පයක් තෝරන්න." },
     "musicOn":    { "en": "Mute music", "si": "සංගීතය නවත්වන්න" },
     "musicOff":   { "en": "Play music", "si": "සංගීතය වාදනය කරන්න" },
     "msgYes": {
@@ -326,9 +330,11 @@ html[lang="si"] .l-small{font-size:3.9cqw;line-height:1.5;font-style:normal}
 .step{display:flex;align-items:center;gap:16px}
 .step button{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--wine);background:transparent;color:var(--wine);font-size:1.4rem;line-height:1;cursor:pointer}
 .step output{min-width:2ch;text-align:center;font-size:1.6rem;font-style:italic}
-.choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.choice button{padding:.7em .6em;border-radius:14px;border:1.5px solid var(--line);background:transparent;cursor:pointer;line-height:1.3}
-.choice button[aria-checked="true"]{border-color:var(--wine);background:var(--wine);color:var(--card)}
+.ticks{display:flex;flex-direction:column;gap:10px}
+.ticks button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:.7em .9em;border-radius:14px;border:1.5px solid var(--line);background:transparent;cursor:pointer;line-height:1.3;font:inherit;color:inherit}
+.ticks button::before{content:"";flex:0 0 20px;width:20px;height:20px;border-radius:6px;border:1.5px solid var(--wine);box-sizing:border-box;transition:background .15s}
+.ticks button[aria-checked="true"]{border-color:var(--wine);background:rgba(107,20,38,.07)}
+.ticks button[aria-checked="true"]::before{background:var(--wine);box-shadow:inset 0 0 0 4px var(--card)}
 .msg{min-height:1.5em;color:var(--wine);font-style:italic;margin-bottom:10px;text-align:center}
 .rsvp-card .actions{margin-top:6px}
 
@@ -614,9 +620,11 @@ html[lang="si"] .cal-month{font-family:var(--serif);font-weight:600;font-size:cl
         <input type="text" id="gName" autocomplete="name" maxlength="80">
       </div>
       <div class="field">
-        <div class="choice" role="radiogroup">
-          <button type="button" role="radio" aria-checked="false" data-a="yes" data-k="ui.accept"></button>
-          <button type="button" role="radio" aria-checked="false" data-a="no" data-k="ui.decline"></button>
+        <span class="lbl" data-k="ui.attendTitle"></span>
+        <div class="ticks" role="group" aria-label="attendance">
+          <button type="button" role="checkbox" aria-checked="false" data-ev="church" data-k="ui.attendChurch"></button>
+          <button type="button" role="checkbox" aria-checked="false" data-ev="hotel" data-k="ui.attendHotel"></button>
+          <button type="button" role="checkbox" aria-checked="false" data-ev="no" data-k="ui.attendNo"></button>
         </div>
       </div>
       <div class="field">
@@ -834,22 +842,40 @@ function tick(){
 tick(); setInterval(tick,1000);
 
 /* ---------- RSVP ---------- */
-var attend='';
-$$('.choice button').forEach(function(b){
+function tickedEvents(){
+  return $$('.ticks button').filter(function(b){ return b.getAttribute('aria-checked')==='true'; }).map(function(b){ return b.dataset.ev; });
+}
+$$('.ticks button').forEach(function(b){
   b.addEventListener('click',function(){
-    attend=b.dataset.a; $('#rsvpMsg').textContent='';
-    $$('.choice button').forEach(function(x){ x.setAttribute('aria-checked', String(x===b)); });
+    var ev=b.dataset.ev, on = b.getAttribute('aria-checked')!=='true';
+    if(ev==='no'){
+      if(on){ $$('.ticks button[data-ev="church"],.ticks button[data-ev="hotel"]').forEach(function(x){ x.setAttribute('aria-checked','false'); }); }
+      b.setAttribute('aria-checked', String(on));
+    } else {
+      if(on){ $$('.ticks button[data-ev="no"]').forEach(function(x){ x.setAttribute('aria-checked','false'); }); }
+      b.setAttribute('aria-checked', String(on));
+    }
+    $('#rsvpMsg').textContent='';
   });
 });
 function rsvpMessage(){
   var name=$('#gName').value.trim(), msg=$('#rsvpMsg');
   if(!name){ msg.textContent=L(D.ui.nameNeeded); $('#gName').focus(); return null; }
-  if(!attend){ msg.textContent=L(D.ui.choiceNeeded); return null; }
+  var sel=tickedEvents();
+  if(!sel.length){ msg.textContent=L(D.ui.choiceNeeded); return null; }
   msg.textContent='';
-  var t=fmt(L(attend==='yes'?D.ui.msgYes:D.ui.msgNo),{name:name,bride:L(D.couple.bride),groom:L(D.couple.groom),date:L(D.date.display)});
+  var decline = sel.indexOf('no')!==-1;
+  var t;
+  if(decline){
+    t=fmt(L(D.ui.msgNo),{name:name,bride:L(D.couple.bride),groom:L(D.couple.groom),date:L(D.date.display)});
+  } else {
+    var evLabels = sel.map(function(ev){ return L(ev==='church'?D.ui.attendChurch:D.ui.attendHotel); }).join(', ');
+    t=fmt(L(D.ui.msgYes),{name:name,bride:L(D.couple.bride),groom:L(D.couple.groom),date:L(D.date.display)});
+    t += '\n'+(lang==='si'?'පැමිණෙන අවස්ථා: ':'Attending: ')+evLabels;
+  }
   var extra=$('#gMsg').value.trim();
   if(extra){ t += '\n'+(lang==='si'?'පණිවිඩය: ':'Message: ')+extra; }
-  return {name:name, text:t, extra:extra};
+  return {name:name, text:t, extra:extra, attending:sel.join(',')};
 }
 function waLink(t){ return 'https://wa.me/'+D.rsvp.contacts[who].whatsapp.replace(/\D/g,'')+'?text='+enc(t); }
 var who=0;
@@ -871,12 +897,12 @@ $('#sendBtn').addEventListener('click',function(){
   fetch(endpoint,{
     method:'POST',
     headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({name:r.name, attending:attend, message:r.extra, lang:lang, source:'wedding-site', at:new Date().toISOString()})
+    body:JSON.stringify({name:r.name, attending:r.attending, message:r.extra, lang:lang, source:'wedding-site', at:new Date().toISOString()})
   }).then(function(res){ if(!res.ok) throw new Error('HTTP '+res.status); return res.text(); })
   .then(function(){
     $('#rsvpMsg').textContent=L(D.ui.sent);
     $('#gName').value=''; $('#gMsg').value='';
-    attend=''; $$('.choice button').forEach(function(x){ x.setAttribute('aria-checked','false'); });
+    $$('.ticks button').forEach(function(x){ x.setAttribute('aria-checked','false'); });
   })
   .catch(function(){ $('#rsvpMsg').textContent=L(D.ui.sendError); })
   .then(function(){ $('#sendBtn').disabled=false; });

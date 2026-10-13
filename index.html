@@ -121,10 +121,7 @@
     "send":       { "en": "Send RSVP", "si": "පිළිතුර යවන්න" },
     "sending":    { "en": "Sending…", "si": "යවමින්…" },
     "sent":       { "en": "Thank you! Your reply has been received.", "si": "ස්තූතියි! ඔබේ පිළිතුර ලැබුණි." },
-    "sendError":  { "en": "We couldn't send your reply. Please try again, or use WhatsApp / SMS below.", "si": "ඔබේ පිළිතුර යැවීමට නොහැකි විය. නැවත උත්සාහ කරන්න, නැතහොත් පහත WhatsApp / SMS භාවිතා කරන්න." },
-    "sendTo":     { "en": "Send your reply to", "si": "ඔබේ පිළිතුර යවන්නේ" },
-    "whatsapp":   { "en": "WhatsApp", "si": "WhatsApp" },
-    "sms":        { "en": "Send by SMS", "si": "SMS හරහා යවන්න" },
+    "sendError":  { "en": "We couldn't send your reply. Please try again.", "si": "ඔබේ පිළිතුර යැවීමට නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න." },
     "nameNeeded": { "en": "Please enter your full name.", "si": "කරුණාකර ඔබේ සම්පූර්ණ නම ඇතුළත් කරන්න." },
     "choiceNeeded":{ "en": "Please tick at least one option.", "si": "කරුණාකර අවම වශයෙන් එක් විකල්පයක් තෝරන්න." },
     "musicOn":    { "en": "Mute music", "si": "සංගීතය නවත්වන්න" },
@@ -631,15 +628,9 @@ html[lang="si"] .cal-month{font-family:var(--serif);font-weight:600;font-size:cl
         <label for="gMsg" data-k="ui.message"></label>
         <textarea id="gMsg" rows="2" maxlength="500"></textarea>
       </div>
-      <div class="field">
-        <span class="lbl" data-k="ui.sendTo"></span>
-        <div class="who" id="whoBox" role="radiogroup"></div>
-      </div>
       <p class="msg" id="rsvpMsg" role="status"></p>
       <div class="actions">
         <button type="button" class="btn primary" id="sendBtn"><span data-k="ui.send"></span></button>
-        <button type="button" class="btn" id="waBtn"><span data-k="ui.whatsapp"></span></button>
-        <button type="button" class="btn" id="smsBtn"><span data-k="ui.sms"></span></button>
       </div>
     </div>
   </section>
@@ -877,21 +868,10 @@ function rsvpMessage(){
   if(extra){ t += '\n'+(lang==='si'?'පණිවිඩය: ':'Message: ')+extra; }
   return {name:name, text:t, extra:extra, attending:sel.join(',')};
 }
-function waLink(t){ return 'https://wa.me/'+D.rsvp.contacts[who].whatsapp.replace(/\D/g,'')+'?text='+enc(t); }
-var who=0;
-$('#whoBox').innerHTML=D.rsvp.contacts.map(function(c,i){
-  return '<button type="button" role="radio" aria-checked="'+(i===0)+'" data-w="'+i+'" data-k="rsvp.contacts.'+i+'.name">'+L(c.name)+'</button>';
-}).join('');
-$$('#whoBox button').forEach(function(b){
-  b.addEventListener('click',function(){
-    who=+b.dataset.w;
-    $$('#whoBox button').forEach(function(x){ x.setAttribute('aria-checked', String(x===b)); });
-  });
-});
 $('#sendBtn').addEventListener('click',function(){
   var r=rsvpMessage(); if(r===null) return;
   var endpoint=D.rsvp.endpoint;
-  if(!endpoint){ window.open(waLink(r.text),'_blank','noopener'); return; } /* fallback to WhatsApp if no sheet configured */
+  if(!endpoint){ $('#rsvpMsg').textContent=L(D.ui.sendError); return; }
   $('#rsvpMsg').textContent=L(D.ui.sending);
   $('#sendBtn').disabled=true;
   fetch(endpoint,{
@@ -907,12 +887,6 @@ $('#sendBtn').addEventListener('click',function(){
   .catch(function(){ $('#rsvpMsg').textContent=L(D.ui.sendError); })
   .then(function(){ $('#sendBtn').disabled=false; });
 });
-$('#waBtn').addEventListener('click',function(){ var r=rsvpMessage(); if(r!==null) window.open(waLink(r.text),'_blank','noopener'); });
-$('#smsBtn').addEventListener('click',function(){
-  var r=rsvpMessage(); if(r===null) return;
-  window.location.href='sms:'+D.rsvp.contacts[who].phone.replace(/\s/g,'')+'?&body='+enc(r.text);
-});
-
 /* ---------- reveal + scroll-linked ring spin ---------- */
 var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 var revealEls = $$('.reveal');
